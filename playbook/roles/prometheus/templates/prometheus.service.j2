@@ -1,0 +1,21 @@
+[Unit]
+Description=Prometheus
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=prometheus
+Group=prometheus
+Type=simple
+ExecStart=/usr/local/bin/prometheus \
+    --config.file /usr/local/etc/prometheus/prometheus.yml \
+    --storage.tsdb.path /var/lib/prometheus/ \
+    --storage.tsdb.retention.time=1y \
+    --storage.tsdb.retention.size=500GB \
+    --web.enable-admin-api \
+    --web.console.templates=/usr/local/etc/prometheus/consoles \
+    --web.console.libraries=/usr/local/etc/prometheus/console_libraries \
+    --web.listen-address=:9090
+
+[Install]
+WantedBy=multi-user.target

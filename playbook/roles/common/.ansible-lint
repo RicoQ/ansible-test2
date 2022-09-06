@@ -1,0 +1,7 @@
+exclude_paths:
+- .tmp/
+- molecule/
+
+skip_list:
+  - no-changed-when
+  - command-instead-of-module

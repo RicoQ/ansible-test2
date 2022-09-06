@@ -1,0 +1,16 @@
+---
+- name: Prepare
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: Include vars specific to molecule environment
+      include_vars:
+        file: group_vars/molecule.yml
+  tags:
+    - always
+
+- name: Converge
+  hosts: all
+  gather_facts: true
+  roles:
+    - prometheus

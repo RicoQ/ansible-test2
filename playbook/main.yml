@@ -1,0 +1,19 @@
+---
+- name: Prepare
+  hosts: all
+  gather_facts: false
+  any_errors_fatal: true
+  become: true
+  pre_tasks:
+    - name: Install python
+      raw: test -e /usr/bin/python || test -e /usr/bin/python3 || (sudo apt update && sudo apt install -y python-apt python-minimal python-zipstream)
+      register: result
+      until: result is succeeded
+      retries: 6
+      delay: 10
+      changed_when: false
+
+- name: Converge
+  hosts: all
+  roles:
+    - prometheus

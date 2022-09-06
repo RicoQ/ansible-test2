@@ -1,0 +1,38 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: vagrant
+  provider:
+    name: virtualbox
+platforms:
+  - name: test2
+    box: ubuntu/focal64
+    memory: 4096
+    cpus: 2
+    interfaces:
+      - network_name: forwarded_port
+        guest: 9090
+        host: 59090
+      - network_name: forwarded_port
+        guest: 9091
+        host: 59091
+provisioner:
+  name: ansible
+  lint:
+    name: ansible-lint
+  env:
+    ANSIBLE_ROLES_PATH: ../../roles/
+  config_options:
+    defaults:
+      callback_whitelist: profile_tasks, yaml
+verifier:
+  name: testinfra
+  lint:
+    name: flake8
+  options:
+    v: true
+    c: "pytest.ini"
+lint: |
+  yamllint .
+  ansible-lint

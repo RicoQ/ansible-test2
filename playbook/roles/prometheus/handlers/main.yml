@@ -1,0 +1,30 @@
+---
+
+- name: systemd daemon reload
+  systemd:
+    daemon_reload: true
+  become: true
+  listen: "prometheus systemd reload"
+
+- name: Reload prometheus
+  command: killall -HUP prometheus
+  become: true
+  listen: "reload prometheus"
+
+- name: Restart prometheus.service
+  service:
+    name: prometheus.service
+    state: restarted
+  become: true
+  listen: "restart prometheus"
+
+- name: Wait for prometheus API is up & running
+  uri:
+    url: "http://localhost:9090/-/healthy/"
+    status_code: 200
+  register: result
+  until: result.status == 200
+  retries: 60
+  delay: 1
+  when: not ansible_check_mode
+  listen: "wait for prometheus"

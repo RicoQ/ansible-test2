@@ -1,0 +1,125 @@
+---
+
+- name: Add the user 'prometheus'
+  user:
+    name: prometheus
+    comment: prometheus
+    shell: /bin/false
+    create_home: false
+  become: true
+  tags:
+    - prometheus
+    - install
+
+- name: Create directories
+  file:
+    path: '{{ item }}'
+    state: directory
+    owner: prometheus
+    group: prometheus
+    mode: '0775'
+  with_items:
+    - /usr/local/etc/prometheus
+    - /usr/local/etc/prometheus/rules
+    - /var/lib/prometheus
+  become: true
+  tags:
+    - prometheus
+    - install
+
+- name: Download & Unarchive prometheus
+  unarchive:
+    src: 'https://github.com/prometheus/prometheus/releases/download/v{{ prometheus_version }}/prometheus-{{ prometheus_version }}.linux-amd64.tar.gz'
+    dest: /tmp
+    remote_src: true
+  register: dl_result
+  until: dl_result is succeeded
+  retries: 5
+  delay: 30
+  tags:
+    - prometheus
+    - install
+
+- name: Copy binaries /usr/local/bin/
+  copy:
+    src: '/tmp/prometheus-{{ prometheus_version }}.linux-amd64/{{ item }}'
+    dest: /usr/local/bin/
+    remote_src: true
+    owner: prometheus
+    group: prometheus
+    mode: '0755'
+  notify:
+    - restart prometheus
+  with_items:
+    - prometheus
+    - promtool
+  become: true
+  when: not ansible_check_mode
+  tags:
+    - prometheus
+    - install
+
+- name: Copy libraries /usr/local/etc/prometheus
+  copy:
+    src: '/tmp/prometheus-{{ prometheus_version }}.linux-amd64/{{ item }}'
+    dest: /usr/local/etc/prometheus
+    remote_src: true
+    owner: prometheus
+    group: prometheus
+    mode: '0755'
+  notify:
+    - restart prometheus
+  with_items:
+    - consoles
+    - console_libraries
+  become: true
+  when: not ansible_check_mode
+  tags:
+    - prometheus
+    - install
+
+- name: Generate /usr/local/etc/prometheus/prometheus.yml
+  template:
+    src: "{{ prometheus_config }}"
+    dest: /usr/local/etc/prometheus/prometheus.yml
+    validate: '/usr/local/bin/promtool check config %s'
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - prometheus systemd reload
+    - reload prometheus
+  become: true
+  tags:
+    - prometheus
+    - config
+
+- name: Generate systemd prometheus.service
+  template:
+    src: prometheus.service.j2
+    dest: /lib/systemd/system/prometheus.service
+    owner: root
+    group: root
+    mode: '0644'
+  notify:
+    - restart prometheus
+    - wait for prometheus
+  become: true
+  tags:
+    - prometheus
+    - install
+
+- name: Start prometheus.service
+  service:
+    name: prometheus.service
+    state: started
+    enabled: true
+  notify:
+    - wait for prometheus
+  become: true
+  tags:
+    - prometheus
+    - install
+
+- name: flush_handlers
+  meta: flush_handlers
