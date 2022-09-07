@@ -65,7 +65,7 @@ molecule destroy
 molecule converge -- --diff
 ```
 
-* Check ```curl http://localhost:59090/metrics | grep "promhttp_metric_handler_requests_total"``` returns something
+* Check ```curl http://localhost:59090/metrics | grep "promhttp_metric_handler_requests_total"``` dot not output any error
 
 ## Step2: introduce ```prometheus_port``` var
 
@@ -75,10 +75,18 @@ molecule converge -- --diff
 
 * Update ansible code to use ```prometheus_port``` instead of hard coded ```9090``` value
 
-* ```molecule converge```
+* !!! Be sure systemd daemon is reloaded when service config is updated
 
-* Check ```curl http://localhost:59091/metrics | grep "promhttp_metric_handler_requests_total"``` returns something
+* ```molecule converge -- --diff```
 
-* push your changes
+* Check ```curl http://localhost:59091/metrics | grep "promhttp_metric_handler_requests_total"``` dot not output any error
+
+* If you need to debug/investigate use ```molecule login``` then ```sudo -i```, ex of helpfull commands:
+  - ```systemctl status prometheus```
+  - ```journalctl -u prometheus```
+  - ```systemctl restart prometheus```
+  - ...
+
+* git commit & push your changes
 
 * Create a Pull Request with this change
