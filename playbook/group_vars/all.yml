@@ -1,2 +1,3 @@
 ---
 lp: { env: staging }
+prometheus_port: 9091

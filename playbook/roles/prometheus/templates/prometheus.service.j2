@@ -15,7 +15,7 @@ ExecStart=/usr/local/bin/prometheus \
     --web.enable-admin-api \
     --web.console.templates=/usr/local/etc/prometheus/consoles \
     --web.console.libraries=/usr/local/etc/prometheus/console_libraries \
-    --web.listen-address=:9090
+    --web.listen-address=:{{ prometheus_port }}
 
 [Install]
 WantedBy=multi-user.target

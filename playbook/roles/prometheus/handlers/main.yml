@@ -11,6 +11,13 @@
   become: true
   listen: "reload prometheus"
 
+- name: Stop prometheus.service
+  service:
+    name: prometheus.service
+    state: stopped
+  become: true
+  listen: "stop prometheus"
+
 - name: Restart prometheus.service
   service:
     name: prometheus.service
@@ -20,11 +27,11 @@
 
 - name: Wait for prometheus API is up & running
   uri:
-    url: "http://localhost:9090/-/healthy/"
+    url: "http://localhost:{{ prometheus_port }}/-/healthy/"
     status_code: 200
   register: result
   until: result.status == 200
-  retries: 60
+  retries: 10
   delay: 1
   when: not ansible_check_mode
   listen: "wait for prometheus"

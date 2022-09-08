@@ -112,10 +112,8 @@
 - name: Start prometheus.service
   service:
     name: prometheus.service
-    state: started
+    state: restarted
     enabled: true
-  notify:
-    - wait for prometheus
   become: true
   tags:
     - prometheus
@@ -123,3 +121,4 @@
 
 - name: flush_handlers
   meta: flush_handlers
+  
