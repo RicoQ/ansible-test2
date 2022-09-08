@@ -114,6 +114,7 @@
     name: prometheus.service
     state: restarted
     enabled: true
+    daemon_reload: yes
   become: true
   tags:
     - prometheus
